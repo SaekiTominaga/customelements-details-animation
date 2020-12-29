@@ -11,37 +11,29 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _preOpen, _animation, _summaryElement, _summaryToggleHTML, _detailsContentElement, _detailsContentCustomElementName, _windowResizeTimeoutId, _summaryClickEventListener, _summaryMouseEnterEventListener, _summaryMouseLeaveEventListener, _detailsContentTransitionEndEventListener, _windowResizeEventListener;
+var _preOpen, _animation, _supportCSSTypedOM, _summaryElement, _summaryToggleHTML, _detailsContentElement, _detailsContentCustomElementName, _windowResizeTimeoutId, _summaryClickEventListener, _summaryMouseEnterEventListener, _summaryMouseLeaveEventListener, _detailsContentTransitionEndEventListener, _windowResizeEventListener;
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @example
- * <details is="animation-details"
- *   open="[Optional・boolean] Whether the details are visible."
- *   data-content-element="[Optional] Custom element name for the <details> content (Content excluding <summary> in the <details> element). Note that custom element names must contain a hyphen. The default value is `x-animation-details-content`."
- *   data-summary-toggle="[Optional] Switch the contents of the <summary> element when opening or closing. You can write HTML markup directly."
- * >
- *   <summary>Caption text</summary>
- *   <p>Contents text</p>
- * </details>
- *
- * @version 1.0.0
+ * @version 1.1.0
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     constructor() {
         super();
         _preOpen.set(this, false); // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
         _animation.set(this, false); // アニメーション中かどうか
+        _supportCSSTypedOM.set(this, void 0); // CSS Typed Object Model に対応しているか（Chrome 66+, Chromium Edge） https://caniuse.com/mdn-api_element_attributestylemap
         _summaryElement.set(this, null);
         _summaryToggleHTML.set(this, void 0);
         _detailsContentElement.set(this, null); // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
-        _detailsContentCustomElementName.set(this, 'x-animation-details-content'); // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
+        _detailsContentCustomElementName.set(this, 'x-details-animation-content'); // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
         _windowResizeTimeoutId.set(this, null); // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
         _summaryClickEventListener.set(this, void 0);
         _summaryMouseEnterEventListener.set(this, void 0);
         _summaryMouseLeaveEventListener.set(this, void 0);
         _detailsContentTransitionEndEventListener.set(this, void 0);
         _windowResizeEventListener.set(this, void 0);
+        __classPrivateFieldSet(this, _supportCSSTypedOM, this.attributeStyleMap !== undefined);
         __classPrivateFieldSet(this, _summaryClickEventListener, this._summaryClickEvent.bind(this));
         __classPrivateFieldSet(this, _summaryMouseEnterEventListener, this._summaryMouseEnterEvent.bind(this));
         __classPrivateFieldSet(this, _summaryMouseLeaveEventListener, this._summaryMouseLeaveEvent.bind(this));
@@ -141,7 +133,12 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     _open() {
         setTimeout(() => {
-            __classPrivateFieldGet(this, _detailsContentElement).style.height = `${String(__classPrivateFieldGet(this, _detailsContentElement).scrollHeight)}px`;
+            if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+                __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.set('height', CSS.px(__classPrivateFieldGet(this, _detailsContentElement).scrollHeight));
+            }
+            else {
+                __classPrivateFieldGet(this, _detailsContentElement).style.height = `${String(__classPrivateFieldGet(this, _detailsContentElement).scrollHeight)}px`;
+            }
         }, 0); // TODO 最初から open 状態の場合、初期状態では高さが正常に取得できないための回避策
         window.addEventListener('resize', __classPrivateFieldGet(this, _windowResizeEventListener), { passive: true });
     }
@@ -149,20 +146,35 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * コンテンツエリアを閉じる処理
      */
     _close() {
-        __classPrivateFieldGet(this, _detailsContentElement).style.height = '0';
+        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+            __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.set('height', '0');
+        }
+        else {
+            __classPrivateFieldGet(this, _detailsContentElement).style.height = '0';
+        }
         window.removeEventListener('resize', __classPrivateFieldGet(this, _windowResizeEventListener));
     }
     /**
      * <summary> 要素上にマウスカーソルが入ったときの処理
      */
     _summaryMouseEnterEvent() {
-        __classPrivateFieldGet(this, _detailsContentElement).style.willChange = 'height';
+        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+            __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.set('will-change', 'height');
+        }
+        else {
+            __classPrivateFieldGet(this, _detailsContentElement).style.willChange = 'height';
+        }
     }
     /**
      * <summary> 要素上からマウスカーソルが外れたときの処理
      */
     _summaryMouseLeaveEvent() {
-        __classPrivateFieldGet(this, _detailsContentElement).style.willChange = '';
+        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+            __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.delete('will-change');
+        }
+        else {
+            __classPrivateFieldGet(this, _detailsContentElement).style.willChange = '';
+        }
     }
     /**
      * 開閉アニメーションが終了したときの処理
@@ -183,9 +195,15 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         }
         __classPrivateFieldSet(this, _windowResizeTimeoutId, setTimeout(() => {
             const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
-            detailsContentElement.style.height = 'auto';
-            detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+            if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+                detailsContentElement.attributeStyleMap.set('height', 'auto');
+                detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
+            }
+            else {
+                detailsContentElement.style.height = 'auto';
+                detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+            }
         }, 100));
     }
 }
-_preOpen = new WeakMap(), _animation = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHTML = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentCustomElementName = new WeakMap(), _windowResizeTimeoutId = new WeakMap(), _summaryClickEventListener = new WeakMap(), _summaryMouseEnterEventListener = new WeakMap(), _summaryMouseLeaveEventListener = new WeakMap(), _detailsContentTransitionEndEventListener = new WeakMap(), _windowResizeEventListener = new WeakMap();
+_preOpen = new WeakMap(), _animation = new WeakMap(), _supportCSSTypedOM = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHTML = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentCustomElementName = new WeakMap(), _windowResizeTimeoutId = new WeakMap(), _summaryClickEventListener = new WeakMap(), _summaryMouseEnterEventListener = new WeakMap(), _summaryMouseLeaveEventListener = new WeakMap(), _detailsContentTransitionEndEventListener = new WeakMap(), _windowResizeEventListener = new WeakMap();

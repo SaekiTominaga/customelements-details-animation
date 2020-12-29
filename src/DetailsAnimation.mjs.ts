@@ -1,27 +1,19 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @example
- * <details is="animation-details"
- *   open="[Optional・boolean] Whether the details are visible."
- *   data-content-element="[Optional] Custom element name for the <details> content (Content excluding <summary> in the <details> element). Note that custom element names must contain a hyphen. The default value is `x-animation-details-content`."
- *   data-summary-toggle="[Optional] Switch the contents of the <summary> element when opening or closing. You can write HTML markup directly."
- * >
- *   <summary>Caption text</summary>
- *   <p>Contents text</p>
- * </details>
- *
- * @version 1.0.0
+ * @version 1.1.0
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
 	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
 	#animation = false; // アニメーション中かどうか
 
+	#supportCSSTypedOM: boolean; // CSS Typed Object Model に対応しているか（Chrome 66+, Chromium Edge） https://caniuse.com/mdn-api_element_attributestylemap
+
 	#summaryElement: HTMLElement | null = null;
 	#summaryToggleHTML: string | undefined;
 
 	#detailsContentElement: HTMLElement | null = null; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
-	#detailsContentCustomElementName = 'x-animation-details-content'; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
+	#detailsContentCustomElementName = 'x-details-animation-content'; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
 
 	#windowResizeTimeoutId: NodeJS.Timeout | null = null; // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
 
@@ -33,6 +25,8 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 
 	constructor() {
 		super();
+
+		this.#supportCSSTypedOM = this.attributeStyleMap !== undefined;
 
 		this.#summaryClickEventListener = this._summaryClickEvent.bind(this);
 		this.#summaryMouseEnterEventListener = this._summaryMouseEnterEvent.bind(this);
@@ -150,7 +144,11 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 */
 	private _open(): void {
 		setTimeout(() => {
-			(<HTMLElement>this.#detailsContentElement).style.height = `${String((<HTMLElement>this.#detailsContentElement).scrollHeight)}px`;
+			if (this.#supportCSSTypedOM) {
+				(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('height', CSS.px((<HTMLElement>this.#detailsContentElement).scrollHeight));
+			} else {
+				(<HTMLElement>this.#detailsContentElement).style.height = `${String((<HTMLElement>this.#detailsContentElement).scrollHeight)}px`;
+			}
 		}, 0); // TODO 最初から open 状態の場合、初期状態では高さが正常に取得できないための回避策
 
 		window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
@@ -160,7 +158,11 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * コンテンツエリアを閉じる処理
 	 */
 	private _close(): void {
-		(<HTMLElement>this.#detailsContentElement).style.height = '0';
+		if (this.#supportCSSTypedOM) {
+			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('height', '0');
+		} else {
+			(<HTMLElement>this.#detailsContentElement).style.height = '0';
+		}
 
 		window.removeEventListener('resize', this.#windowResizeEventListener);
 	}
@@ -169,14 +171,22 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * <summary> 要素上にマウスカーソルが入ったときの処理
 	 */
 	private _summaryMouseEnterEvent(): void {
-		(<HTMLElement>this.#detailsContentElement).style.willChange = 'height';
+		if (this.#supportCSSTypedOM) {
+			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('will-change', 'height');
+		} else {
+			(<HTMLElement>this.#detailsContentElement).style.willChange = 'height';
+		}
 	}
 
 	/**
 	 * <summary> 要素上からマウスカーソルが外れたときの処理
 	 */
 	private _summaryMouseLeaveEvent(): void {
-		(<HTMLElement>this.#detailsContentElement).style.willChange = '';
+		if (this.#supportCSSTypedOM) {
+			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.delete('will-change');
+		} else {
+			(<HTMLElement>this.#detailsContentElement).style.willChange = '';
+		}
 	}
 
 	/**
@@ -202,8 +212,13 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		this.#windowResizeTimeoutId = setTimeout((): void => {
 			const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-			detailsContentElement.style.height = 'auto';
-			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+			if (this.#supportCSSTypedOM) {
+				detailsContentElement.attributeStyleMap.set('height', 'auto');
+				detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
+			} else {
+				detailsContentElement.style.height = 'auto';
+				detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+			}
 		}, 100);
 	}
 }

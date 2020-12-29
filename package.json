@@ -7,6 +7,7 @@
 		"@saekitominaga/customelements-details-animation-content": "^1.0.0"
 	},
 	"devDependencies": {
+		"@types/w3c-css-typed-object-model-level-1": "^20180410.0.2",
 		"@typescript-eslint/eslint-plugin": "^4.10.0",
 		"@typescript-eslint/parser": "^4.10.0",
 		"brotlin": "^1.1.0",

@@ -1,17 +1,7 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @example
- * <details is="animation-details"
- *   open="[Optional・boolean] Whether the details are visible."
- *   data-content-element="[Optional] Custom element name for the <details> content (Content excluding <summary> in the <details> element). Note that custom element names must contain a hyphen. The default value is `x-animation-details-content`."
- *   data-summary-toggle="[Optional] Switch the contents of the <summary> element when opening or closing. You can write HTML markup directly."
- * >
- *   <summary>Caption text</summary>
- *   <p>Contents text</p>
- * </details>
- *
- * @version 1.0.0
+ * @version 1.1.0
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     #private;
