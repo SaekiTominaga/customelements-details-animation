@@ -8,6 +8,19 @@ Animate the opening or closing process of the [&lt;details&gt; element](https://
 
 - [Demo page](https://saekitominaga.github.io/customelements-details-animation/demo.html)
 
+## Examples
+
+```
+<details is="x-details-animation"
+  open=""
+  data-content-element="x-details-animation-content"
+  data-summary-toggle="Caption Text (&lt;b&gt;open&lt;/b&gt;)"
+>
+  <summary>Caption Text (<b>close</b>)</summary>
+  <p>Contents text</p>
+</details>
+```
+
 ## Attributes
 
 <dl>
