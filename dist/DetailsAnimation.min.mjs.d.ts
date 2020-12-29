@@ -1,7 +1,7 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.1.0
+ * @version 1.1.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     #private;
@@ -39,8 +39,12 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     private _detailsContentTransitionEndEvent;
     /**
-     * ウィンドウサイズを変更した時の処理
+     * ウィンドウサイズを変更した時の処理（ResizeObserver API 未対応ブラウザ）
      */
     private _windowResizeEvent;
+    /**
+     * コンテンツエリアの矩形が変化した時の処理
+     */
+    private _detailContentResize;
 }
 //# sourceMappingURL=DetailsAnimation.mjs.d.ts.map

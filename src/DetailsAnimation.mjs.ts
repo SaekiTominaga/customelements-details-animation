@@ -1,13 +1,13 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.1.0
+ * @version 1.1.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
 	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
 	#animation = false; // アニメーション中かどうか
 
-	#supportCSSTypedOM: boolean; // CSS Typed Object Model に対応しているか（Chrome 66+, Chromium Edge） https://caniuse.com/mdn-api_element_attributestylemap
+	#supportCSSTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
 
 	#summaryElement: HTMLElement | null = null;
 	#summaryToggleHTML: string | undefined;
@@ -15,13 +15,15 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	#detailsContentElement: HTMLElement | null = null; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
 	#detailsContentCustomElementName = 'x-details-animation-content'; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
 
-	#windowResizeTimeoutId: NodeJS.Timeout | null = null; // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
+	#detailsContentResizeObserver: ResizeObserver | null = null;
 
 	#summaryClickEventListener: (ev: Event) => void;
 	#summaryMouseEnterEventListener: () => void;
 	#summaryMouseLeaveEventListener: () => void;
 	#detailsContentTransitionEndEventListener: () => void;
 	#windowResizeEventListener: () => void;
+
+	#windowResizeTimeoutId: NodeJS.Timeout | null = null; // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
 
 	constructor() {
 		super();
@@ -75,10 +77,22 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		contentElement.appendChild(fragment);
 		detailsContentElement.appendChild(contentElement);
 
+		if (window.ResizeObserver !== undefined) {
+			this.#detailsContentResizeObserver = new ResizeObserver(() => {
+				this._detailContentResize();
+			});
+		}
+
 		const open = this.open;
 		this.#preOpen = open;
 		if (open) {
 			this._open();
+
+			if (this.#detailsContentResizeObserver !== null) {
+				this.#detailsContentResizeObserver.observe(detailsContentElement);
+			} else {
+				window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
+			}
 		} else {
 			this._close();
 		}
@@ -143,28 +157,34 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * コンテンツエリアを開く処理
 	 */
 	private _open(): void {
+		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+
 		setTimeout(() => {
 			if (this.#supportCSSTypedOM) {
-				(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('height', CSS.px((<HTMLElement>this.#detailsContentElement).scrollHeight));
+				detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
 			} else {
-				(<HTMLElement>this.#detailsContentElement).style.height = `${String((<HTMLElement>this.#detailsContentElement).scrollHeight)}px`;
+				detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
 			}
 		}, 0); // TODO 最初から open 状態の場合、初期状態では高さが正常に取得できないための回避策
-
-		window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
 	}
 
 	/**
 	 * コンテンツエリアを閉じる処理
 	 */
 	private _close(): void {
+		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+
 		if (this.#supportCSSTypedOM) {
-			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('height', '0');
+			detailsContentElement.attributeStyleMap.set('height', '0');
 		} else {
-			(<HTMLElement>this.#detailsContentElement).style.height = '0';
+			detailsContentElement.style.height = '0';
 		}
 
-		window.removeEventListener('resize', this.#windowResizeEventListener);
+		if (this.#detailsContentResizeObserver !== null) {
+			this.#detailsContentResizeObserver.unobserve(detailsContentElement);
+		} else {
+			window.removeEventListener('resize', this.#windowResizeEventListener);
+		}
 	}
 
 	/**
@@ -197,11 +217,17 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 
 		if (!this.#preOpen) {
 			this.open = false;
+		} else {
+			if (this.#detailsContentResizeObserver !== null) {
+				this.#detailsContentResizeObserver.observe(<HTMLElement>this.#detailsContentElement);
+			} else {
+				window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
+			}
 		}
 	}
 
 	/**
-	 * ウィンドウサイズを変更した時の処理
+	 * ウィンドウサイズを変更した時の処理（ResizeObserver API 未対応ブラウザ）
 	 */
 	private _windowResizeEvent(): void {
 		const timeoutId = this.#windowResizeTimeoutId;
@@ -209,16 +235,23 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 			clearTimeout(timeoutId);
 		}
 
-		this.#windowResizeTimeoutId = setTimeout((): void => {
-			const detailsContentElement = <HTMLElement>this.#detailsContentElement;
-
-			if (this.#supportCSSTypedOM) {
-				detailsContentElement.attributeStyleMap.set('height', 'auto');
-				detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
-			} else {
-				detailsContentElement.style.height = 'auto';
-				detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
-			}
+		this.#windowResizeTimeoutId = setTimeout(() => {
+			this._detailContentResize();
 		}, 100);
+	}
+
+	/**
+	 * コンテンツエリアの矩形が変化した時の処理
+	 */
+	private _detailContentResize(): void {
+		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+
+		if (this.#supportCSSTypedOM) {
+			detailsContentElement.attributeStyleMap.set('height', 'auto');
+			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
+		} else {
+			detailsContentElement.style.height = 'auto';
+			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+		}
 	}
 }
