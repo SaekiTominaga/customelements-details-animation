@@ -15,7 +15,7 @@
 			const detailsElement = document.createElement('details', { is: 'x-details-animation' });
 			const detailsContent = `
 <summary>Caption Text</summary>
-<p>Contents text</p>
+<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
 `;
 			detailsElement.insertAdjacentHTML('afterbegin', detailsContent);
 			document.getElementById('js-generate').replaceWith(detailsElement);
@@ -29,12 +29,12 @@
 
 			<pre><code>&lt;details is="x-details-animation"&gt;
   &lt;summary&gt;Caption Text&lt;/summary&gt;
-  &lt;p&gt;Contents text&lt;/p&gt;
+  &lt;p&gt;Contents text text ...&lt;/p&gt;
 &lt;/details&gt;</code></pre>
 
 			<details is="x-details-animation">
 				<summary>Caption Text</summary>
-				<p>Contents text</p>
+				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
 			</details>
 		</section>
 
@@ -49,12 +49,12 @@
 
 			<pre><code>&lt;details is="x-details-animation" open=""&gt;
   &lt;summary&gt;Caption Text&lt;/summary&gt;
-  &lt;p&gt;Contents text&lt;/p&gt;
+  &lt;p&gt;Contents text text ...&lt;/p&gt;
 &lt;/details&gt;</code></pre>
 
 			<details is="x-details-animation" open="">
 				<summary>Caption Text</summary>
-				<p>Contents text</p>
+				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
 			</details>
 		</section>
 
@@ -63,12 +63,12 @@
 
 			<pre><code>&lt;details is="x-details-animation" data-content-element="x-details-animation-content"&gt;
   &lt;summary&gt;Caption Text&lt;/summary&gt;
-  &lt;p&gt;Contents text&lt;/p&gt;
+  &lt;p&gt;Contents text text ...&lt;/p&gt;
 &lt;/details&gt;</code></pre>
 
 			<details is="x-details-animation" data-content-element="x-details-animation-content">
 				<summary>Caption Text</summary>
-				<p>Contents text</p>
+				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
 			</details>
 		</section>
 
@@ -77,12 +77,12 @@
 
 			<pre><code>&lt;details is="x-details-animation" data-summary-toggle="Caption Text (&amp;lt;b&amp;gt;close&amp;lt;/b&amp;gt;)"&gt;
   &lt;summary&gt;Caption Text (&lt;b&gt;open&lt;/b&gt;)&lt;/summary&gt;
-  &lt;p&gt;Contents text&lt;/p&gt;
+  &lt;p&gt;Contents text text ...&lt;/p&gt;
 &lt;/details&gt;</code></pre>
 
 			<details is="x-details-animation" data-summary-toggle="Caption Text (&lt;b&gt;close&lt;/b&gt;)">
 				<summary>Caption Text (<b>open</b>)</summary>
-				<p>Contents text</p>
+				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
 			</details>
 		</section>
 	</body>
