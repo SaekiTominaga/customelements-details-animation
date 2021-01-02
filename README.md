@@ -1,8 +1,8 @@
-# Animated motion `&lt;details&gt;` by Custom Elements
+# Animated motion `<details>` by Custom Elements
 
 [![npm version](https://badge.fury.io/js/%40saekitominaga%2Fcustomelements-details-animation.svg)](https://badge.fury.io/js/%40saekitominaga%2Fcustomelements-details-animation)
 
-Animate the opening or closing process of the [`&lt;details&gt;` element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element) by Custom Elements.
+Animate the opening or closing process of the [`<details>` element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element) by Custom Elements.
 
 ## Demo
 
