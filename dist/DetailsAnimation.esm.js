@@ -15,7 +15,7 @@ var _preOpen, _animation, _supportCSSTypedOM, _summaryElement, _summaryToggleHTM
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.1.1
+ * @version 1.2.0
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     constructor() {

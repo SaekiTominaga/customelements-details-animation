@@ -1,7 +1,7 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.1.1
+ * @version 1.2.0
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
 	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
