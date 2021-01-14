@@ -1,7 +1,7 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.2.0
+ * @version 1.2.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     #private;

@@ -1,7 +1,7 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  *
- * @version 1.2.0
+ * @version 1.2.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
 	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
@@ -159,13 +159,11 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	private _open(): void {
 		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-		setTimeout(() => {
-			if (this.#supportCSSTypedOM) {
-				detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
-			} else {
-				detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
-			}
-		}, 0); // TODO 最初から open 状態の場合、初期状態では高さが正常に取得できないための回避策
+		if (this.#supportCSSTypedOM) {
+			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
+		} else {
+			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
+		}
 	}
 
 	/**
