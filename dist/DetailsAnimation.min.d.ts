@@ -47,4 +47,4 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     private _detailContentResize;
 }
-//# sourceMappingURL=DetailsAnimation.esm.d.ts.map
+//# sourceMappingURL=DetailsAnimation.d.ts.map

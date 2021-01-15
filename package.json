@@ -2,9 +2,38 @@
 	"name": "@saekitominaga/customelements-details-animation",
 	"version": "1.2.1",
 	"description": "Animate the opening or closing process of the `<details>` element by Custom Elements.",
+	"keywords": [
+		"web-components",
+		"custom-elements",
+		"details"
+	],
+	"homepage": "https://github.com/SaekiTominaga/customelements-details-animation#readme",
+	"bugs": {
+		"url": "https://github.com/SaekiTominaga/customelements-details-animation/issues"
+	},
+	"license": "MIT",
+	"author": "Saeki Tominaga",
+	"files": [
+		"dist",
+		"src"
+	],
 	"type": "module",
+	"browser": "dist/DetailsAnimation.js",
+	"types": "dist/DetailsAnimation.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SaekiTominaga/customelements-details-animation.git"
+	},
+	"scripts": {
+		"_build:tsc": "tsc -w",
+		"_build:compress": "onchange -f add -f change -v dist/DetailsAnimation.js -- brotlin compress dist/DetailsAnimation.js -m 1",
+		"_build:minify": "onchange -f add -f change -v dist/DetailsAnimation.js -- terser dist/DetailsAnimation.js -o dist/DetailsAnimation.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='dist/DetailsAnimation.js.map',filename='DetailsAnimation.js',includeSources,url='DetailsAnimation.min.js.map'",
+		"_build:minify-compress": "onchange -f add -f change -v dist/DetailsAnimation.min.js -- brotlin compress dist/DetailsAnimation.min.js -m 1",
+		"_build:minify-declaration": "onchange -f add -f change -v dist/DetailsAnimation.d.ts -- cpy dist/DetailsAnimation.d.ts dist --rename=DetailsAnimation.min.d.ts",
+		"build": "run-p _build:*"
+	},
 	"dependencies": {
-		"@saekitominaga/customelements-details-animation-content": "^1.1.0"
+		"@saekitominaga/customelements-details-animation-content": "^1.2.0"
 	},
 	"devDependencies": {
 		"@types/resize-observer-browser": "^0.1.4",
@@ -21,31 +50,6 @@
 		"terser": "^5.5.1",
 		"typescript": "^4.1.3"
 	},
-	"main": "dist/DetailsAnimation.esm.js",
-	"types": "dist/DetailsAnimation.esm.d.ts",
-	"scripts": {
-		"_ts-watch:tsc": "tsc -w",
-		"_ts-watch:compress": "onchange -f add -f change -v dist/DetailsAnimation.esm.js -- brotlin compress dist/DetailsAnimation.esm.js -m 1",
-		"_ts-watch:minify": "onchange -f add -f change -v dist/DetailsAnimation.esm.js -- terser dist/DetailsAnimation.esm.js -o dist/DetailsAnimation.min.esm.js -c ecma=2020 --mangle --ecma 2020 --module --source-map base=dist,filename=DetailsAnimation.esm.js,includeSources",
-		"_ts-watch:compress-minify": "onchange -f add -f change -v dist/DetailsAnimation.min.esm.js -- brotlin compress dist/DetailsAnimation.min.esm.js -m 1",
-		"_ts-watch:dts-minify": "onchange -f add -f change -v dist/DetailsAnimation.esm.d.ts -- cpy dist/DetailsAnimation.esm.d.ts dist --rename=DetailsAnimation.min.esm.d.ts",
-		"ts-watch": "run-p _ts-watch:*"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/SaekiTominaga/customelements-details-animation.git"
-	},
-	"keywords": [
-		"web-components",
-		"custom-elements",
-		"details"
-	],
-	"author": "Saeki Tominaga",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/SaekiTominaga/customelements-details-animation/issues"
-	},
-	"homepage": "https://github.com/SaekiTominaga/customelements-details-animation#readme",
 	"publishConfig": {
 		"access": "public"
 	}

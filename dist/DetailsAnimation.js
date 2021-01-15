@@ -237,3 +237,4 @@ export default class DetailsAnimation extends HTMLDetailsElement {
     }
 }
 _preOpen = new WeakMap(), _animation = new WeakMap(), _supportCSSTypedOM = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHTML = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentCustomElementName = new WeakMap(), _detailsContentResizeObserver = new WeakMap(), _summaryClickEventListener = new WeakMap(), _summaryMouseEnterEventListener = new WeakMap(), _summaryMouseLeaveEventListener = new WeakMap(), _detailsContentTransitionEndEventListener = new WeakMap(), _windowResizeEventListener = new WeakMap(), _windowResizeTimeoutId = new WeakMap();
+//# sourceMappingURL=DetailsAnimation.js.map

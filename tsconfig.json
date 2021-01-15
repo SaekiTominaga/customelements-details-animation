@@ -6,6 +6,7 @@
 		"incremental": true,
 		"module": "ES2020",
 		"outDir": "dist/",
+		"sourceMap": true,
 		"target": "ES2020",
 
 		/* Strict Checks */
