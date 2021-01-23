@@ -10,7 +10,7 @@ Animate the opening or closing process of the [`<details>` element](https://html
 
 ## Examples
 
-```
+```HTML
 <details is="x-details-animation"
   open=""
   data-content-element="x-details-animation-content"
