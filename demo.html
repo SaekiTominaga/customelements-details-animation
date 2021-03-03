@@ -3,11 +3,38 @@
 	<head>
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<title>`DetailsAnimation.js` Demo</title>
+		<style>
+			body {
+				padding-bottom: 10em;
+			}
+
+			summary {
+				padding: 1em;
+				border: 1px solid #999;
+				display: list-item;
+				color: #000;
+				background: #8f0;
+			}
+
+			details[data-pre-open] > summary {
+				list-style: none;
+			}
+			details[data-pre-open] > summary::-webkit-details-marker {
+				display: none;
+			}
+
+			details[data-pre-open] > summary::before {
+				margin-right: 0.5em;
+				display: inline-block;
+				content: '▼';
+			}
+			details[data-pre-open='false'] > summary::before {
+				transform: rotate(-90deg);
+			}
+		</style>
 		<script type="module">
-			import AnimationDetailsContent from './node_modules/@saekitominaga/customelements-details-animation-content/dist/DetailsAnimationContent.js';
 			import DetailsAnimation from './dist/DetailsAnimation.js';
 
-			customElements.define('x-details-animation-content', AnimationDetailsContent);
 			customElements.define('x-details-animation', DetailsAnimation, {
 				extends: 'details',
 			});
@@ -34,7 +61,11 @@
 
 			<details is="x-details-animation">
 				<summary>Caption Text</summary>
-				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
+				<p>
+					Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text
+				</p>
 			</details>
 		</section>
 
@@ -48,21 +79,29 @@
 
 			<details is="x-details-animation" open="">
 				<summary>Caption Text</summary>
-				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
+				<p>
+					Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text
+				</p>
 			</details>
 		</section>
 
 		<section>
-			<h2>`data-content-element` attribute</h2>
+			<h2>`data-duration`, `data-easing` attribute</h2>
 
-			<pre><code>&lt;details is="x-details-animation" data-content-element="x-details-animation-content"&gt;
+			<pre><code>&lt;details is="x-details-animation" data-duration="2000" data-easing="linear"&gt;
   &lt;summary&gt;Caption Text&lt;/summary&gt;
   &lt;p&gt;Contents text text ...&lt;/p&gt;
 &lt;/details&gt;</code></pre>
 
-			<details is="x-details-animation" data-content-element="x-details-animation-content">
+			<details is="x-details-animation" data-duration="2000" data-easing="linear">
 				<summary>Caption Text</summary>
-				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
+				<p>
+					Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text
+				</p>
 			</details>
 		</section>
 
@@ -76,7 +115,11 @@
 
 			<details is="x-details-animation" data-summary-toggle="Caption Text (&lt;b&gt;close&lt;/b&gt;)">
 				<summary>Caption Text (<b>open</b>)</summary>
-				<p>Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text</p>
+				<p>
+					Contents text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text
+					text text
+				</p>
 			</details>
 		</section>
 

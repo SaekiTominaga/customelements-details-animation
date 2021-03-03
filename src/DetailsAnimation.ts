@@ -2,26 +2,20 @@
  * Animate the opening or closing process of the <details> element by Custom Elements.
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
-	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
-	#animation = false; // アニメーション中かどうか
+	#animation: Animation | null = null;
+
+	#keyframeAnimationOptions: KeyframeAnimationOptions = {
+		duration: 500,
+		easing: 'ease',
+	}; // https://developer.mozilla.org/en-US/docs/Web/API/Element/animate#parameters
 
 	readonly #supportCssTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
 
-	#summaryElement: HTMLElement | null = null;
-	#summaryToggleHTML: string | undefined;
-
-	#detailsContentElement: HTMLElement | null = null; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
-	#detailsContentCustomElementName = 'x-details-animation-content'; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素の名前
-
-	#detailsContentResizeObserver: ResizeObserver | null = null;
+	#summaryElement: HTMLElement | null = null; // <summary> 要素
+	#summaryToggleHtml: string | undefined; // <summary> 要素内のテキスト（HTML）
+	#detailsContentElement: HTMLDivElement | null = null; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
 
 	readonly #summaryClickEventListener: (ev: Event) => void;
-	readonly #summaryMouseEnterEventListener: () => void;
-	readonly #summaryMouseLeaveEventListener: () => void;
-	readonly #detailsContentTransitionEndEventListener: () => void;
-	readonly #windowResizeEventListener: () => void;
-
-	#windowResizeTimeoutId: NodeJS.Timeout | null = null; // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
 
 	constructor() {
 		super();
@@ -29,10 +23,6 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		this.#supportCssTypedOM = this.attributeStyleMap !== undefined;
 
 		this.#summaryClickEventListener = this._summaryClickEvent.bind(this);
-		this.#summaryMouseEnterEventListener = this._summaryMouseEnterEvent.bind(this);
-		this.#summaryMouseLeaveEventListener = this._summaryMouseLeaveEvent.bind(this);
-		this.#detailsContentTransitionEndEventListener = this._detailsContentTransitionEndEvent.bind(this);
-		this.#windowResizeEventListener = this._windowResizeEvent.bind(this);
 	}
 
 	connectedCallback(): void {
@@ -48,17 +38,26 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 			this.open = this.getAttribute('open') !== null;
 		}
 
-		const detailsContentCustomElementName = this.dataset.contentElement;
-		if (detailsContentCustomElementName !== undefined) {
-			if (!detailsContentCustomElementName.includes('-')) {
-				throw new Error('Attribute: `data-content-element` value must contain a hyphen.');
-			}
-			this.#detailsContentCustomElementName = detailsContentCustomElementName;
+		this.dataset.preOpen = String(this.open);
+
+		const duration = this.dataset.duration;
+		if (duration !== undefined) {
+			this.#keyframeAnimationOptions.duration = Number(duration);
+		}
+		const easing = this.dataset.easing;
+		if (easing !== undefined) {
+			this.#keyframeAnimationOptions.easing = easing;
 		}
 
-		this.#summaryToggleHTML = this.dataset.summaryToggle;
+		this.#summaryToggleHtml = this.dataset.summaryToggle;
 
-		/* <summary> を除くノードを <div> でラップする */
+		if (this.#supportCssTypedOM) {
+			this.attributeStyleMap.set('overflow', 'hidden');
+		} else {
+			this.style.overflow = 'hidden';
+		}
+
+		/* <summary> を除くノードをラップする */
 		const fragment = document.createDocumentFragment();
 		let nextNode = summaryElement.nextSibling;
 		while (nextNode !== null) {
@@ -66,50 +65,23 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 			nextNode = summaryElement.nextSibling;
 		}
 
-		const detailsContentElement = document.createElement(this.#detailsContentCustomElementName);
+		const detailsContentElement = document.createElement('div');
+		if (this.#supportCssTypedOM) {
+			detailsContentElement.attributeStyleMap.set('display', 'flex'); // margin の相殺を避けるために Block formatting context を生成
+		} else {
+			detailsContentElement.style.display = 'flex';
+		}
+		detailsContentElement.appendChild(fragment);
 		summaryElement.insertAdjacentElement('afterend', detailsContentElement);
 		this.#detailsContentElement = detailsContentElement;
 
-		const contentElement = document.createElement('div');
-		contentElement.slot = 'content';
-		contentElement.appendChild(fragment);
-		detailsContentElement.appendChild(contentElement);
-
-		if (window.ResizeObserver !== undefined) {
-			this.#detailsContentResizeObserver = new ResizeObserver(() => {
-				this._detailContentResize();
-			});
-		}
-
-		const open = this.open;
-		this.#preOpen = open;
-		if (open) {
-			this._open();
-
-			if (this.#detailsContentResizeObserver !== null) {
-				this.#detailsContentResizeObserver.observe(detailsContentElement);
-			} else {
-				window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
-			}
-		} else {
-			this._close();
-		}
-
 		summaryElement.addEventListener('click', this.#summaryClickEventListener);
-		summaryElement.addEventListener('mouseenter', this.#summaryMouseEnterEventListener, { passive: true });
-		summaryElement.addEventListener('mouseleave', this.#summaryMouseLeaveEventListener, { passive: true });
-		detailsContentElement.addEventListener('transitionend', this.#detailsContentTransitionEndEventListener, { passive: true });
 	}
 
 	disconnectedCallback(): void {
 		const summaryElement = <HTMLElement>this.#summaryElement;
-		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
 		summaryElement.removeEventListener('click', this.#summaryClickEventListener);
-		summaryElement.removeEventListener('mouseenter', this.#summaryMouseEnterEventListener);
-		summaryElement.removeEventListener('mouseleave', this.#summaryMouseLeaveEventListener);
-		detailsContentElement.removeEventListener('transitionend', this.#detailsContentTransitionEndEventListener);
-		window.removeEventListener('resize', this.#windowResizeEventListener);
 	}
 
 	/**
@@ -120,12 +92,22 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	private _summaryClickEvent(ev: Event): void {
 		ev.preventDefault();
 
-		const preOpen = !this.#preOpen;
-		this.#preOpen = preOpen;
-		this._toggleSummary();
+		const preOpen = this.dataset.preOpen !== 'true';
+		this.dataset.preOpen = String(preOpen);
 
-		if (!this.#animation && preOpen) {
-			this.open = true;
+		this._toggleSummaryText();
+
+		if (this.#animation?.playState === 'running') {
+			/* アニメーションが終わらないうちに連続して <summary> がクリックされた場合 */
+			const height = this.offsetHeight;
+
+			if (this.#supportCssTypedOM) {
+				this.attributeStyleMap.set('height', CSS.px(height));
+			} else {
+				this.style.height = `${height}px`;
+			}
+
+			this.#animation.cancel();
 		}
 
 		if (preOpen) {
@@ -133,21 +115,18 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		} else {
 			this._close();
 		}
-
-		this.#animation = true;
 	}
 
 	/**
-	 * <summary> 要素の表示を切り替える
+	 * <summary> 要素内のテキスト表示を切り替える
 	 */
-	private _toggleSummary(): void {
-		const summaryToggleHTML = this.#summaryToggleHTML;
-		if (summaryToggleHTML !== undefined) {
+	private _toggleSummaryText(): void {
+		const summaryToggleHtml = this.#summaryToggleHtml;
+		if (summaryToggleHtml !== undefined) {
 			const summaryElement = <HTMLElement>this.#summaryElement;
 
-			this.#summaryToggleHTML = summaryElement.innerHTML;
-			summaryElement.textContent = '';
-			summaryElement.insertAdjacentHTML('beforeend', summaryToggleHTML);
+			this.#summaryToggleHtml = summaryElement.innerHTML;
+			summaryElement.innerHTML = summaryToggleHtml;
 		}
 	}
 
@@ -155,99 +134,51 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * コンテンツエリアを開く処理
 	 */
 	private _open(): void {
-		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+		const detailsHeight = this.offsetHeight;
 
-		if (this.#supportCssTypedOM) {
-			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
-		} else {
-			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
-		}
+		this.open = true;
+
+		const summaryHeight = (<HTMLElement>this.#summaryElement).offsetHeight;
+		const detailsContentHeight = (<HTMLElement>this.#detailsContentElement).offsetHeight;
+
+		this.#animation = this.animate(
+			{
+				height: [`${detailsHeight}px`, `${summaryHeight + detailsContentHeight}px`],
+			},
+			this.#keyframeAnimationOptions
+		);
+
+		this.#animation.onfinish = () => {
+			if (this.#supportCssTypedOM) {
+				this.attributeStyleMap.delete('height');
+			} else {
+				this.style.height = '';
+			}
+		};
 	}
 
 	/**
 	 * コンテンツエリアを閉じる処理
 	 */
 	private _close(): void {
-		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+		const detailsHeight = this.offsetHeight;
+		const summaryHeight = (<HTMLElement>this.#summaryElement).offsetHeight;
 
-		if (this.#supportCssTypedOM) {
-			detailsContentElement.attributeStyleMap.set('height', '0');
-		} else {
-			detailsContentElement.style.height = '0';
-		}
+		this.#animation = this.animate(
+			{
+				height: [`${detailsHeight}px`, `${summaryHeight}px`],
+			},
+			this.#keyframeAnimationOptions
+		);
 
-		if (this.#detailsContentResizeObserver !== null) {
-			this.#detailsContentResizeObserver.unobserve(detailsContentElement);
-		} else {
-			window.removeEventListener('resize', this.#windowResizeEventListener);
-		}
-	}
-
-	/**
-	 * <summary> 要素上にマウスカーソルが入ったときの処理
-	 */
-	private _summaryMouseEnterEvent(): void {
-		if (this.#supportCssTypedOM) {
-			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('will-change', 'height');
-		} else {
-			(<HTMLElement>this.#detailsContentElement).style.willChange = 'height';
-		}
-	}
-
-	/**
-	 * <summary> 要素上からマウスカーソルが外れたときの処理
-	 */
-	private _summaryMouseLeaveEvent(): void {
-		if (this.#supportCssTypedOM) {
-			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.delete('will-change');
-		} else {
-			(<HTMLElement>this.#detailsContentElement).style.willChange = '';
-		}
-	}
-
-	/**
-	 * 開閉アニメーションが終了したときの処理
-	 */
-	private _detailsContentTransitionEndEvent(): void {
-		this.#animation = false;
-
-		if (!this.#preOpen) {
+		this.#animation.onfinish = () => {
 			this.open = false;
-		} else {
-			if (this.#detailsContentResizeObserver !== null) {
-				this.#detailsContentResizeObserver.observe(<HTMLElement>this.#detailsContentElement);
+
+			if (this.#supportCssTypedOM) {
+				this.attributeStyleMap.delete('height');
 			} else {
-				window.addEventListener('resize', this.#windowResizeEventListener, { passive: true });
+				this.style.height = '';
 			}
-		}
-	}
-
-	/**
-	 * ウィンドウサイズを変更した時の処理（ResizeObserver API 未対応ブラウザ）
-	 */
-	private _windowResizeEvent(): void {
-		const timeoutId = this.#windowResizeTimeoutId;
-		if (timeoutId !== null) {
-			clearTimeout(timeoutId);
-		}
-
-		this.#windowResizeTimeoutId = setTimeout(() => {
-			this._detailContentResize();
-		}, 100);
-	}
-
-	/**
-	 * コンテンツエリアの矩形が変化した時の処理
-	 */
-	private _detailContentResize(): void {
-		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
-
-		if (this.#supportCssTypedOM) {
-			detailsContentElement.attributeStyleMap.set('height', 'auto');
-			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
-		} else {
-			detailsContentElement.style.height = 'auto';
-			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
-		}
+		};
 	}
 }

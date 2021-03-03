@@ -13,9 +13,9 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     private _summaryClickEvent;
     /**
-     * <summary> 要素の表示を切り替える
+     * <summary> 要素内のテキスト表示を切り替える
      */
-    private _toggleSummary;
+    private _toggleSummaryText;
     /**
      * コンテンツエリアを開く処理
      */
@@ -24,25 +24,5 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * コンテンツエリアを閉じる処理
      */
     private _close;
-    /**
-     * <summary> 要素上にマウスカーソルが入ったときの処理
-     */
-    private _summaryMouseEnterEvent;
-    /**
-     * <summary> 要素上からマウスカーソルが外れたときの処理
-     */
-    private _summaryMouseLeaveEvent;
-    /**
-     * 開閉アニメーションが終了したときの処理
-     */
-    private _detailsContentTransitionEndEvent;
-    /**
-     * ウィンドウサイズを変更した時の処理（ResizeObserver API 未対応ブラウザ）
-     */
-    private _windowResizeEvent;
-    /**
-     * コンテンツエリアの矩形が変化した時の処理
-     */
-    private _detailContentResize;
 }
 //# sourceMappingURL=DetailsAnimation.d.ts.map

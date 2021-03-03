@@ -33,9 +33,6 @@
 		"_build:minify-declaration": "onchange -f add -f change -v dist/DetailsAnimation.d.ts -- cpy {{file}} dist --rename=DetailsAnimation.min.d.ts",
 		"build": "run-p _build:*"
 	},
-	"dependencies": {
-		"@saekitominaga/customelements-details-animation-content": "^1.2.0"
-	},
 	"devDependencies": {
 		"@types/resize-observer-browser": "^0.1.5",
 		"@types/w3c-css-typed-object-model-level-1": "^20180410.0.2",
