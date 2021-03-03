@@ -18,7 +18,8 @@
 		"src"
 	],
 	"type": "module",
-	"browser": "dist/DetailsAnimation.js",
+	"main": "dist/DetailsAnimation.js",
+	"module": "dist/DetailsAnimation.js",
 	"types": "dist/DetailsAnimation.d.ts",
 	"repository": {
 		"type": "git",
@@ -26,10 +27,10 @@
 	},
 	"scripts": {
 		"_build:tsc": "tsc -w",
-		"_build:compress": "onchange -f add -f change -v dist/DetailsAnimation.js -- brotlin compress dist/DetailsAnimation.js -m 1",
-		"_build:minify": "onchange -f add -f change -v dist/DetailsAnimation.js -- terser dist/DetailsAnimation.js -o dist/DetailsAnimation.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='dist/DetailsAnimation.js.map',filename='DetailsAnimation.js',includeSources,url='DetailsAnimation.min.js.map'",
-		"_build:minify-compress": "onchange -f add -f change -v dist/DetailsAnimation.min.js -- brotlin compress dist/DetailsAnimation.min.js -m 1",
-		"_build:minify-declaration": "onchange -f add -f change -v dist/DetailsAnimation.d.ts -- cpy dist/DetailsAnimation.d.ts dist --rename=DetailsAnimation.min.d.ts",
+		"_build:compress": "onchange -f add -f change -v dist/DetailsAnimation.js -- brotlin compress {{file}} -m 1",
+		"_build:minify": "onchange -f add -f change -v dist/DetailsAnimation.js -- terser {{file}} -o {{fileDir}}/{{fileBaseNoExt}}.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='{{fileDir}}/{{fileBaseNoExt}}.js.map',filename='{{fileBaseNoExt}}.js',includeSources,url='{{fileBaseNoExt}}.min.js.map'",
+		"_build:minify-compress": "onchange -f add -f change -v dist/DetailsAnimation.min.js -- brotlin compress {{file}} -m 1",
+		"_build:minify-declaration": "onchange -f add -f change -v dist/DetailsAnimation.d.ts -- cpy {{file}} dist --rename=DetailsAnimation.min.d.ts",
 		"build": "run-p _build:*"
 	},
 	"dependencies": {
