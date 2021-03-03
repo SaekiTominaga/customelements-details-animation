@@ -11,18 +11,16 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _preOpen, _animation, _supportCSSTypedOM, _summaryElement, _summaryToggleHTML, _detailsContentElement, _detailsContentCustomElementName, _detailsContentResizeObserver, _summaryClickEventListener, _summaryMouseEnterEventListener, _summaryMouseLeaveEventListener, _detailsContentTransitionEndEventListener, _windowResizeEventListener, _windowResizeTimeoutId;
+var _preOpen, _animation, _supportCssTypedOM, _summaryElement, _summaryToggleHTML, _detailsContentElement, _detailsContentCustomElementName, _detailsContentResizeObserver, _summaryClickEventListener, _summaryMouseEnterEventListener, _summaryMouseLeaveEventListener, _detailsContentTransitionEndEventListener, _windowResizeEventListener, _windowResizeTimeoutId;
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
- *
- * @version 1.2.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     constructor() {
         super();
         _preOpen.set(this, false); // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
         _animation.set(this, false); // アニメーション中かどうか
-        _supportCSSTypedOM.set(this, void 0); // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
+        _supportCssTypedOM.set(this, void 0); // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
         _summaryElement.set(this, null);
         _summaryToggleHTML.set(this, void 0);
         _detailsContentElement.set(this, null); // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
@@ -34,7 +32,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         _detailsContentTransitionEndEventListener.set(this, void 0);
         _windowResizeEventListener.set(this, void 0);
         _windowResizeTimeoutId.set(this, null); // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
-        __classPrivateFieldSet(this, _supportCSSTypedOM, this.attributeStyleMap !== undefined);
+        __classPrivateFieldSet(this, _supportCssTypedOM, this.attributeStyleMap !== undefined);
         __classPrivateFieldSet(this, _summaryClickEventListener, this._summaryClickEvent.bind(this));
         __classPrivateFieldSet(this, _summaryMouseEnterEventListener, this._summaryMouseEnterEvent.bind(this));
         __classPrivateFieldSet(this, _summaryMouseLeaveEventListener, this._summaryMouseLeaveEvent.bind(this));
@@ -145,7 +143,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     _open() {
         const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
-        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
             detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
         }
         else {
@@ -157,7 +155,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     _close() {
         const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
-        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
             detailsContentElement.attributeStyleMap.set('height', '0');
         }
         else {
@@ -174,7 +172,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * <summary> 要素上にマウスカーソルが入ったときの処理
      */
     _summaryMouseEnterEvent() {
-        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
             __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.set('will-change', 'height');
         }
         else {
@@ -185,7 +183,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * <summary> 要素上からマウスカーソルが外れたときの処理
      */
     _summaryMouseLeaveEvent() {
-        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
             __classPrivateFieldGet(this, _detailsContentElement).attributeStyleMap.delete('will-change');
         }
         else {
@@ -226,7 +224,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     _detailContentResize() {
         const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
-        if (__classPrivateFieldGet(this, _supportCSSTypedOM)) {
+        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
             detailsContentElement.attributeStyleMap.set('height', 'auto');
             detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
         }
@@ -236,5 +234,5 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         }
     }
 }
-_preOpen = new WeakMap(), _animation = new WeakMap(), _supportCSSTypedOM = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHTML = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentCustomElementName = new WeakMap(), _detailsContentResizeObserver = new WeakMap(), _summaryClickEventListener = new WeakMap(), _summaryMouseEnterEventListener = new WeakMap(), _summaryMouseLeaveEventListener = new WeakMap(), _detailsContentTransitionEndEventListener = new WeakMap(), _windowResizeEventListener = new WeakMap(), _windowResizeTimeoutId = new WeakMap();
+_preOpen = new WeakMap(), _animation = new WeakMap(), _supportCssTypedOM = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHTML = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentCustomElementName = new WeakMap(), _detailsContentResizeObserver = new WeakMap(), _summaryClickEventListener = new WeakMap(), _summaryMouseEnterEventListener = new WeakMap(), _summaryMouseLeaveEventListener = new WeakMap(), _detailsContentTransitionEndEventListener = new WeakMap(), _windowResizeEventListener = new WeakMap(), _windowResizeTimeoutId = new WeakMap();
 //# sourceMappingURL=DetailsAnimation.js.map

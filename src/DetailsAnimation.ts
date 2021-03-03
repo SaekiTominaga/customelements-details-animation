@@ -1,13 +1,11 @@
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
- *
- * @version 1.2.1
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
 	#preOpen = false; // アニメーションの実現のため本来の open 属性の反映タイミングは実際とは変えており、開閉処理が始まった瞬間の状態をこの変数に記録する
 	#animation = false; // アニメーション中かどうか
 
-	#supportCSSTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
+	readonly #supportCssTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
 
 	#summaryElement: HTMLElement | null = null;
 	#summaryToggleHTML: string | undefined;
@@ -17,18 +15,18 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 
 	#detailsContentResizeObserver: ResizeObserver | null = null;
 
-	#summaryClickEventListener: (ev: Event) => void;
-	#summaryMouseEnterEventListener: () => void;
-	#summaryMouseLeaveEventListener: () => void;
-	#detailsContentTransitionEndEventListener: () => void;
-	#windowResizeEventListener: () => void;
+	readonly #summaryClickEventListener: (ev: Event) => void;
+	readonly #summaryMouseEnterEventListener: () => void;
+	readonly #summaryMouseLeaveEventListener: () => void;
+	readonly #detailsContentTransitionEndEventListener: () => void;
+	readonly #windowResizeEventListener: () => void;
 
 	#windowResizeTimeoutId: NodeJS.Timeout | null = null; // window.onresize のタイマーの識別 ID（clearTimeout() で使用）
 
 	constructor() {
 		super();
 
-		this.#supportCSSTypedOM = this.attributeStyleMap !== undefined;
+		this.#supportCssTypedOM = this.attributeStyleMap !== undefined;
 
 		this.#summaryClickEventListener = this._summaryClickEvent.bind(this);
 		this.#summaryMouseEnterEventListener = this._summaryMouseEnterEvent.bind(this);
@@ -159,7 +157,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	private _open(): void {
 		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-		if (this.#supportCSSTypedOM) {
+		if (this.#supportCssTypedOM) {
 			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
 		} else {
 			detailsContentElement.style.height = `${String(detailsContentElement.scrollHeight)}px`;
@@ -172,7 +170,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	private _close(): void {
 		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-		if (this.#supportCSSTypedOM) {
+		if (this.#supportCssTypedOM) {
 			detailsContentElement.attributeStyleMap.set('height', '0');
 		} else {
 			detailsContentElement.style.height = '0';
@@ -189,7 +187,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * <summary> 要素上にマウスカーソルが入ったときの処理
 	 */
 	private _summaryMouseEnterEvent(): void {
-		if (this.#supportCSSTypedOM) {
+		if (this.#supportCssTypedOM) {
 			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.set('will-change', 'height');
 		} else {
 			(<HTMLElement>this.#detailsContentElement).style.willChange = 'height';
@@ -200,7 +198,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * <summary> 要素上からマウスカーソルが外れたときの処理
 	 */
 	private _summaryMouseLeaveEvent(): void {
-		if (this.#supportCSSTypedOM) {
+		if (this.#supportCssTypedOM) {
 			(<HTMLElement>this.#detailsContentElement).attributeStyleMap.delete('will-change');
 		} else {
 			(<HTMLElement>this.#detailsContentElement).style.willChange = '';
@@ -244,7 +242,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	private _detailContentResize(): void {
 		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-		if (this.#supportCSSTypedOM) {
+		if (this.#supportCssTypedOM) {
 			detailsContentElement.attributeStyleMap.set('height', 'auto');
 			detailsContentElement.attributeStyleMap.set('height', CSS.px(detailsContentElement.scrollHeight));
 		} else {
