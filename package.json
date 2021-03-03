@@ -1,6 +1,6 @@
 {
 	"name": "@saekitominaga/customelements-details-animation",
-	"version": "1.3.0",
+	"version": "2.0.0",
 	"description": "Animate the opening or closing process of the `<details>` element by Custom Elements.",
 	"keywords": [
 		"web-components",
