@@ -2,6 +2,8 @@
  * Animate the opening or closing process of the <details> element by Custom Elements.
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
+	readonly #supportCssTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
+
 	#animation: Animation | null = null;
 
 	#keyframeAnimationOptions: KeyframeAnimationOptions = {
@@ -9,11 +11,11 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		easing: 'ease',
 	}; // https://developer.mozilla.org/en-US/docs/Web/API/Element/animate#parameters
 
-	readonly #supportCssTypedOM: boolean; // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
-
 	#summaryElement: HTMLElement | null = null; // <summary> 要素
-	#summaryToggleHtml: string | undefined; // <summary> 要素内のテキスト（HTML）
+	#summaryToggleHtml: string | null = null; // <summary> 要素内のテキスト（HTML）
+
 	#detailsContentElement: HTMLDivElement | null = null; // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
+	#detailsContentHeight: number | null = null; // コンテンツを囲う要素の高さ
 
 	readonly #summaryClickEventListener: (ev: Event) => void;
 
@@ -49,13 +51,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 			this.#keyframeAnimationOptions.easing = easing;
 		}
 
-		this.#summaryToggleHtml = this.dataset.summaryToggle;
-
-		if (this.#supportCssTypedOM) {
-			this.attributeStyleMap.set('overflow', 'hidden');
-		} else {
-			this.style.overflow = 'hidden';
-		}
+		this.#summaryToggleHtml = this.dataset.summaryToggle ?? null;
 
 		/* <summary> を除くノードをラップする */
 		const fragment = document.createDocumentFragment();
@@ -67,9 +63,9 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 
 		const detailsContentElement = document.createElement('div');
 		if (this.#supportCssTypedOM) {
-			detailsContentElement.attributeStyleMap.set('display', 'flex'); // margin の相殺を避けるために Block formatting context を生成
+			detailsContentElement.attributeStyleMap.set('overflow', 'hidden');
 		} else {
-			detailsContentElement.style.display = 'flex';
+			detailsContentElement.style.overflow = 'hidden';
 		}
 		detailsContentElement.appendChild(fragment);
 		summaryElement.insertAdjacentElement('afterend', detailsContentElement);
@@ -99,12 +95,13 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 
 		if (this.#animation?.playState === 'running') {
 			/* アニメーションが終わらないうちに連続して <summary> がクリックされた場合 */
-			const height = this.offsetHeight;
+			const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+			const height = detailsContentElement.offsetHeight;
 
 			if (this.#supportCssTypedOM) {
-				this.attributeStyleMap.set('height', CSS.px(height));
+				detailsContentElement.attributeStyleMap.set('height', CSS.px(height));
 			} else {
-				this.style.height = `${height}px`;
+				detailsContentElement.style.height = `${height}px`;
 			}
 
 			this.#animation.cancel();
@@ -122,7 +119,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 */
 	private _toggleSummaryText(): void {
 		const summaryToggleHtml = this.#summaryToggleHtml;
-		if (summaryToggleHtml !== undefined) {
+		if (summaryToggleHtml !== null) {
 			const summaryElement = <HTMLElement>this.#summaryElement;
 
 			this.#summaryToggleHtml = summaryElement.innerHTML;
@@ -134,25 +131,28 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * コンテンツエリアを開く処理
 	 */
 	private _open(): void {
-		const detailsHeight = this.offsetHeight;
+		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
+
+		const startHeight = detailsContentElement.offsetHeight;
 
 		this.open = true;
 
-		const summaryHeight = (<HTMLElement>this.#summaryElement).offsetHeight;
-		const detailsContentHeight = (<HTMLElement>this.#detailsContentElement).offsetHeight;
+		const endHeight = this.#detailsContentHeight ?? detailsContentElement.offsetHeight;
 
-		this.#animation = this.animate(
+		this.#animation = detailsContentElement.animate(
 			{
-				height: [`${detailsHeight}px`, `${summaryHeight + detailsContentHeight}px`],
+				height: [`${startHeight}px`, `${endHeight}px`],
 			},
 			this.#keyframeAnimationOptions
 		);
 
 		this.#animation.onfinish = () => {
+			this.#detailsContentHeight = detailsContentElement.offsetHeight;
+
 			if (this.#supportCssTypedOM) {
-				this.attributeStyleMap.delete('height');
+				detailsContentElement.attributeStyleMap.delete('height');
 			} else {
-				this.style.height = '';
+				detailsContentElement.style.height = '';
 			}
 		};
 	}
@@ -161,12 +161,14 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 	 * コンテンツエリアを閉じる処理
 	 */
 	private _close(): void {
-		const detailsHeight = this.offsetHeight;
-		const summaryHeight = (<HTMLElement>this.#summaryElement).offsetHeight;
+		const detailsContentElement = <HTMLElement>this.#detailsContentElement;
 
-		this.#animation = this.animate(
+		const startHeight = detailsContentElement.offsetHeight;
+		this.#detailsContentHeight = startHeight;
+
+		this.#animation = detailsContentElement.animate(
 			{
-				height: [`${detailsHeight}px`, `${summaryHeight}px`],
+				height: [`${startHeight}px`, '0px'],
 			},
 			this.#keyframeAnimationOptions
 		);
@@ -174,10 +176,12 @@ export default class DetailsAnimation extends HTMLDetailsElement {
 		this.#animation.onfinish = () => {
 			this.open = false;
 
+			this.#detailsContentHeight = null;
+
 			if (this.#supportCssTypedOM) {
-				this.attributeStyleMap.delete('height');
+				detailsContentElement.attributeStyleMap.delete('height');
 			} else {
-				this.style.height = '';
+				detailsContentElement.style.height = '';
 			}
 		};
 	}

@@ -11,22 +11,23 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _animation, _keyframeAnimationOptions, _supportCssTypedOM, _summaryElement, _summaryToggleHtml, _detailsContentElement, _summaryClickEventListener;
+var _supportCssTypedOM, _animation, _keyframeAnimationOptions, _summaryElement, _summaryToggleHtml, _detailsContentElement, _detailsContentHeight, _summaryClickEventListener;
 /**
  * Animate the opening or closing process of the <details> element by Custom Elements.
  */
 export default class DetailsAnimation extends HTMLDetailsElement {
     constructor() {
         super();
+        _supportCssTypedOM.set(this, void 0); // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
         _animation.set(this, null);
         _keyframeAnimationOptions.set(this, {
             duration: 500,
             easing: 'ease',
         }); // https://developer.mozilla.org/en-US/docs/Web/API/Element/animate#parameters
-        _supportCssTypedOM.set(this, void 0); // CSS Typed Object Model に対応しているか https://caniuse.com/mdn-api_element_attributestylemap
         _summaryElement.set(this, null); // <summary> 要素
-        _summaryToggleHtml.set(this, void 0); // <summary> 要素内のテキスト（HTML）
+        _summaryToggleHtml.set(this, null); // <summary> 要素内のテキスト（HTML）
         _detailsContentElement.set(this, null); // <details> 要素内の <summary> 要素を除くコンテンツを囲う要素
+        _detailsContentHeight.set(this, null); // コンテンツを囲う要素の高さ
         _summaryClickEventListener.set(this, void 0);
         __classPrivateFieldSet(this, _supportCssTypedOM, this.attributeStyleMap !== undefined);
         __classPrivateFieldSet(this, _summaryClickEventListener, this._summaryClickEvent.bind(this));
@@ -51,13 +52,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         if (easing !== undefined) {
             __classPrivateFieldGet(this, _keyframeAnimationOptions).easing = easing;
         }
-        __classPrivateFieldSet(this, _summaryToggleHtml, this.dataset.summaryToggle);
-        if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
-            this.attributeStyleMap.set('overflow', 'hidden');
-        }
-        else {
-            this.style.overflow = 'hidden';
-        }
+        __classPrivateFieldSet(this, _summaryToggleHtml, this.dataset.summaryToggle ?? null);
         /* <summary> を除くノードをラップする */
         const fragment = document.createDocumentFragment();
         let nextNode = summaryElement.nextSibling;
@@ -67,10 +62,10 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         }
         const detailsContentElement = document.createElement('div');
         if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
-            detailsContentElement.attributeStyleMap.set('display', 'flex'); // margin の相殺を避けるために Block formatting context を生成
+            detailsContentElement.attributeStyleMap.set('overflow', 'hidden');
         }
         else {
-            detailsContentElement.style.display = 'flex';
+            detailsContentElement.style.overflow = 'hidden';
         }
         detailsContentElement.appendChild(fragment);
         summaryElement.insertAdjacentElement('afterend', detailsContentElement);
@@ -93,12 +88,13 @@ export default class DetailsAnimation extends HTMLDetailsElement {
         this._toggleSummaryText();
         if (__classPrivateFieldGet(this, _animation)?.playState === 'running') {
             /* アニメーションが終わらないうちに連続して <summary> がクリックされた場合 */
-            const height = this.offsetHeight;
+            const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
+            const height = detailsContentElement.offsetHeight;
             if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
-                this.attributeStyleMap.set('height', CSS.px(height));
+                detailsContentElement.attributeStyleMap.set('height', CSS.px(height));
             }
             else {
-                this.style.height = `${height}px`;
+                detailsContentElement.style.height = `${height}px`;
             }
             __classPrivateFieldGet(this, _animation).cancel();
         }
@@ -114,7 +110,7 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      */
     _toggleSummaryText() {
         const summaryToggleHtml = __classPrivateFieldGet(this, _summaryToggleHtml);
-        if (summaryToggleHtml !== undefined) {
+        if (summaryToggleHtml !== null) {
             const summaryElement = __classPrivateFieldGet(this, _summaryElement);
             __classPrivateFieldSet(this, _summaryToggleHtml, summaryElement.innerHTML);
             summaryElement.innerHTML = summaryToggleHtml;
@@ -124,19 +120,20 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * コンテンツエリアを開く処理
      */
     _open() {
-        const detailsHeight = this.offsetHeight;
+        const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
+        const startHeight = detailsContentElement.offsetHeight;
         this.open = true;
-        const summaryHeight = __classPrivateFieldGet(this, _summaryElement).offsetHeight;
-        const detailsContentHeight = __classPrivateFieldGet(this, _detailsContentElement).offsetHeight;
-        __classPrivateFieldSet(this, _animation, this.animate({
-            height: [`${detailsHeight}px`, `${summaryHeight + detailsContentHeight}px`],
+        const endHeight = __classPrivateFieldGet(this, _detailsContentHeight) ?? detailsContentElement.offsetHeight;
+        __classPrivateFieldSet(this, _animation, detailsContentElement.animate({
+            height: [`${startHeight}px`, `${endHeight}px`],
         }, __classPrivateFieldGet(this, _keyframeAnimationOptions)));
         __classPrivateFieldGet(this, _animation).onfinish = () => {
+            __classPrivateFieldSet(this, _detailsContentHeight, detailsContentElement.offsetHeight);
             if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
-                this.attributeStyleMap.delete('height');
+                detailsContentElement.attributeStyleMap.delete('height');
             }
             else {
-                this.style.height = '';
+                detailsContentElement.style.height = '';
             }
         };
     }
@@ -144,21 +141,23 @@ export default class DetailsAnimation extends HTMLDetailsElement {
      * コンテンツエリアを閉じる処理
      */
     _close() {
-        const detailsHeight = this.offsetHeight;
-        const summaryHeight = __classPrivateFieldGet(this, _summaryElement).offsetHeight;
-        __classPrivateFieldSet(this, _animation, this.animate({
-            height: [`${detailsHeight}px`, `${summaryHeight}px`],
+        const detailsContentElement = __classPrivateFieldGet(this, _detailsContentElement);
+        const startHeight = detailsContentElement.offsetHeight;
+        __classPrivateFieldSet(this, _detailsContentHeight, startHeight);
+        __classPrivateFieldSet(this, _animation, detailsContentElement.animate({
+            height: [`${startHeight}px`, '0px'],
         }, __classPrivateFieldGet(this, _keyframeAnimationOptions)));
         __classPrivateFieldGet(this, _animation).onfinish = () => {
             this.open = false;
+            __classPrivateFieldSet(this, _detailsContentHeight, null);
             if (__classPrivateFieldGet(this, _supportCssTypedOM)) {
-                this.attributeStyleMap.delete('height');
+                detailsContentElement.attributeStyleMap.delete('height');
             }
             else {
-                this.style.height = '';
+                detailsContentElement.style.height = '';
             }
         };
     }
 }
-_animation = new WeakMap(), _keyframeAnimationOptions = new WeakMap(), _supportCssTypedOM = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHtml = new WeakMap(), _detailsContentElement = new WeakMap(), _summaryClickEventListener = new WeakMap();
+_supportCssTypedOM = new WeakMap(), _animation = new WeakMap(), _keyframeAnimationOptions = new WeakMap(), _summaryElement = new WeakMap(), _summaryToggleHtml = new WeakMap(), _detailsContentElement = new WeakMap(), _detailsContentHeight = new WeakMap(), _summaryClickEventListener = new WeakMap();
 //# sourceMappingURL=DetailsAnimation.js.map
