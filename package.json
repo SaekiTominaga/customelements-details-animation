@@ -26,26 +26,17 @@
 		"url": "git+https://github.com/SaekiTominaga/customelements-details-animation.git"
 	},
 	"scripts": {
-		"_build:tsc": "tsc -w",
-		"_build:compress": "onchange -f add -f change -v dist/DetailsAnimation.js -- brotlin compress {{file}} -m 1",
-		"_build:minify": "onchange -f add -f change -v dist/DetailsAnimation.js -- terser {{file}} -o {{fileDir}}/{{fileBaseNoExt}}.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='{{fileDir}}/{{fileBaseNoExt}}.js.map',filename='{{fileBaseNoExt}}.js',includeSources,url='{{fileBaseNoExt}}.min.js.map'",
-		"_build:minify-compress": "onchange -f add -f change -v dist/DetailsAnimation.min.js -- brotlin compress {{file}} -m 1",
-		"_build:minify-declaration": "onchange -f add -f change -v dist/DetailsAnimation.d.ts -- cpy {{file}} dist --rename=DetailsAnimation.min.d.ts",
-		"build": "run-p _build:*"
+		"build": "tsc",
+		"watch": "tsc -w"
 	},
 	"devDependencies": {
 		"@types/resize-observer-browser": "^0.1.5",
 		"@types/w3c-css-typed-object-model-level-1": "^20180410.0.2",
 		"@typescript-eslint/eslint-plugin": "^4.16.1",
 		"@typescript-eslint/parser": "^4.16.1",
-		"brotlin": "^1.1.0",
-		"cpy-cli": "^3.1.1",
 		"eslint": "^7.21.0",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-jsdoc": "^32.2.0",
-		"npm-run-all": "^4.1.5",
-		"onchange": "^7.1.0",
-		"terser": "^5.6.0",
 		"typescript": "^4.2.2"
 	},
 	"publishConfig": {
