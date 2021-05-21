@@ -25,13 +25,13 @@ Animate the opening or closing process of the [`<details>` element](https://html
 ## Attributes
 
 <dl>
-<dt>open [optional]</dt>
+<dt><code>open</code> [optional]</dt>
 <dd>Whether the details are visible. (<a href="https://html.spec.whatwg.org/multipage/interactive-elements.html#attr-details-open">open attribute of &lt;details&gt; Element</a>)</dd>
-<dt>data-duration [optional]</dt>
+<dt><code>data-duration</code> [optional]</dt>
 <dd>The iteration duration which is a real number greater than or equal to zero (including positive infinity) representing the time taken to complete a single iteration of the animation effect (See <a href="https://www.w3.org/TR/web-animations-1/#dictdef-optionaleffecttiming">OptionalEffectTiming</a> for details). If omitted, the default value is <code>500</code>(ms).</dd>
-<dt>data-easing [optional]</dt>
+<dt><code>data-easing</code> [optional]</dt>
 <dd>The timing function used to scale the time to produce easing effects (See <a href="https://www.w3.org/TR/web-animations-1/#dictdef-optionaleffecttiming">OptionalEffectTiming</a> for details). If omitted, the default value is <code>ease</code>.</dd>
-<dt>data-summary-toggle [optional]</dt>
+<dt><code>data-summary-toggle</code> [optional]</dt>
 <dd>Switch the contents of the &lt;summary&gt; element when opening or closing. You can write HTML markup directly.</dd>
 </dl>
 
